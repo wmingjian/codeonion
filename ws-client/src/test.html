@@ -1,0 +1,27 @@
+<html>
+<body>
+</body>
+<script type="text/javascript">
+if('WebSocket' in window){
+        // 创建websocket实例
+        var socket = new WebSocket('ws://127.0.0.1:8111');
+        //打开
+        socket.onopen = function(event) {
+          // 发送
+          socket.send('I am the client and I\'m listening!');
+          // 监听
+          socket.onmessage = function(event) {
+                console.log('Client received a message',event);
+          };
+          // 关闭监听
+          socket.onclose = function(event) {
+                console.log('Client notified socket has closed',event);
+          };
+          // 关闭
+          //socket.close()
+        };
+}else{
+        alert('no ws support in this browser');
+}
+</script>
+</html>
