@@ -32,7 +32,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = codescope$(EXEEXT)
+bin_PROGRAMS = codescope$(EXEEXT) dbuss$(EXEEXT) dbusc$(EXEEXT)
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure COPYING INSTALL \
@@ -49,9 +49,22 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_codescope_OBJECTS = src/main.$(OBJEXT) src/utils.$(OBJEXT)
+am_codescope_OBJECTS = src/codescope-main.$(OBJEXT) \
+	src/codescope-utils.$(OBJEXT)
 codescope_OBJECTS = $(am_codescope_OBJECTS)
-codescope_LDADD = $(LDADD)
+codescope_DEPENDENCIES =
+codescope_LINK = $(CXXLD) $(codescope_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_dbusc_OBJECTS = src/dbusc-dbus-client.$(OBJEXT)
+dbusc_OBJECTS = $(am_dbusc_OBJECTS)
+dbusc_DEPENDENCIES =
+dbusc_LINK = $(CXXLD) $(dbusc_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_dbuss_OBJECTS = src/dbuss-dbus-server.$(OBJEXT)
+dbuss_OBJECTS = $(am_dbuss_OBJECTS)
+dbuss_DEPENDENCIES =
+dbuss_LINK = $(CXXLD) $(dbuss_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -61,8 +74,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(codescope_SOURCES)
-DIST_SOURCES = $(codescope_SOURCES)
+SOURCES = $(codescope_SOURCES) $(dbusc_SOURCES) $(dbuss_SOURCES)
+DIST_SOURCES = $(codescope_SOURCES) $(dbusc_SOURCES) $(dbuss_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -80,11 +93,11 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/hujia/文档/codescope/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/hujia/文档/codeonion/native/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
-AUTOCONF = ${SHELL} /home/hujia/文档/codescope/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/hujia/文档/codescope/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/hujia/文档/codescope/missing --run automake-1.11
+AUTOCONF = ${SHELL} /home/hujia/文档/codeonion/native/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/hujia/文档/codeonion/native/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/hujia/文档/codeonion/native/missing --run automake-1.11
 AWK = mawk
 CPPFLAGS = 
 CXX = g++
@@ -106,7 +119,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/hujia/文档/codescope/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/hujia/文档/codeonion/native/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = codescope
@@ -121,10 +134,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 1.0
-abs_builddir = /home/hujia/文档/codescope
-abs_srcdir = /home/hujia/文档/codescope
-abs_top_builddir = /home/hujia/文档/codescope
-abs_top_srcdir = /home/hujia/文档/codescope
+abs_builddir = /home/hujia/文档/codeonion/native
+abs_srcdir = /home/hujia/文档/codeonion/native
+abs_top_builddir = /home/hujia/文档/codeonion/native
+abs_top_srcdir = /home/hujia/文档/codeonion/native
 ac_ct_CXX = g++
 am__include = include
 am__leading_dot = .
@@ -143,7 +156,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/hujia/文档/codescope/install-sh
+install_sh = ${SHELL} /home/hujia/文档/codeonion/native/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -168,6 +181,26 @@ ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 codescope_SOURCES = src/main.cc \
                     src/utils.cc
 
+codescope_CXXFLAGS = -I/usr/include/dbus-1.0/ \
+                     -I/usr/include/glib-2.0/ \
+                     -I/usr/lib/i386-linux-gnu/glib-2.0/include/ \
+                     -I/usr/lib/i386-linux-gnu/dbus-1.0/include/
+
+codescope_LDADD = -ldbus-glib-1
+dbuss_SOURCES = src/dbus-server.cc
+dbuss_CXXFLAGS = -I/usr/include/dbus-1.0/ \
+                     -I/usr/include/glib-2.0/ \
+                     -I/usr/lib/i386-linux-gnu/glib-2.0/include/ \
+                     -I/usr/lib/i386-linux-gnu/dbus-1.0/include/
+
+dbuss_LDADD = -ldbus-glib-1
+dbusc_SOURCES = src/dbus-client.cc
+dbusc_CXXFLAGS = -I/usr/include/dbus-1.0/ \
+                     -I/usr/include/glib-2.0/ \
+                     -I/usr/lib/i386-linux-gnu/glib-2.0/include/ \
+                     -I/usr/lib/i386-linux-gnu/dbus-1.0/include/
+
+dbusc_LDADD = -ldbus-glib-1
 all: all-am
 
 .SUFFIXES:
@@ -249,22 +282,38 @@ src/$(am__dirstamp):
 src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/$(DEPDIR)
 	@: > src/$(DEPDIR)/$(am__dirstamp)
-src/main.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
-src/utils.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/codescope-main.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/codescope-utils.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 codescope$(EXEEXT): $(codescope_OBJECTS) $(codescope_DEPENDENCIES) $(EXTRA_codescope_DEPENDENCIES) 
 	@rm -f codescope$(EXEEXT)
-	$(CXXLINK) $(codescope_OBJECTS) $(codescope_LDADD) $(LIBS)
+	$(codescope_LINK) $(codescope_OBJECTS) $(codescope_LDADD) $(LIBS)
+src/dbusc-dbus-client.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+dbusc$(EXEEXT): $(dbusc_OBJECTS) $(dbusc_DEPENDENCIES) $(EXTRA_dbusc_DEPENDENCIES) 
+	@rm -f dbusc$(EXEEXT)
+	$(dbusc_LINK) $(dbusc_OBJECTS) $(dbusc_LDADD) $(LIBS)
+src/dbuss-dbus-server.$(OBJEXT): src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+dbuss$(EXEEXT): $(dbuss_OBJECTS) $(dbuss_DEPENDENCIES) $(EXTRA_dbuss_DEPENDENCIES) 
+	@rm -f dbuss$(EXEEXT)
+	$(dbuss_LINK) $(dbuss_OBJECTS) $(dbuss_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f src/main.$(OBJEXT)
-	-rm -f src/utils.$(OBJEXT)
+	-rm -f src/codescope-main.$(OBJEXT)
+	-rm -f src/codescope-utils.$(OBJEXT)
+	-rm -f src/dbusc-dbus-client.$(OBJEXT)
+	-rm -f src/dbuss-dbus-server.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-include src/$(DEPDIR)/main.Po
-include src/$(DEPDIR)/utils.Po
+include src/$(DEPDIR)/codescope-main.Po
+include src/$(DEPDIR)/codescope-utils.Po
+include src/$(DEPDIR)/dbusc-dbus-client.Po
+include src/$(DEPDIR)/dbuss-dbus-server.Po
 
 .cc.o:
 	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -281,6 +330,62 @@ include src/$(DEPDIR)/utils.Po
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+src/codescope-main.o: src/main.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(codescope_CXXFLAGS) $(CXXFLAGS) -MT src/codescope-main.o -MD -MP -MF src/$(DEPDIR)/codescope-main.Tpo -c -o src/codescope-main.o `test -f 'src/main.cc' || echo '$(srcdir)/'`src/main.cc
+	$(am__mv) src/$(DEPDIR)/codescope-main.Tpo src/$(DEPDIR)/codescope-main.Po
+#	source='src/main.cc' object='src/codescope-main.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(codescope_CXXFLAGS) $(CXXFLAGS) -c -o src/codescope-main.o `test -f 'src/main.cc' || echo '$(srcdir)/'`src/main.cc
+
+src/codescope-main.obj: src/main.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(codescope_CXXFLAGS) $(CXXFLAGS) -MT src/codescope-main.obj -MD -MP -MF src/$(DEPDIR)/codescope-main.Tpo -c -o src/codescope-main.obj `if test -f 'src/main.cc'; then $(CYGPATH_W) 'src/main.cc'; else $(CYGPATH_W) '$(srcdir)/src/main.cc'; fi`
+	$(am__mv) src/$(DEPDIR)/codescope-main.Tpo src/$(DEPDIR)/codescope-main.Po
+#	source='src/main.cc' object='src/codescope-main.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(codescope_CXXFLAGS) $(CXXFLAGS) -c -o src/codescope-main.obj `if test -f 'src/main.cc'; then $(CYGPATH_W) 'src/main.cc'; else $(CYGPATH_W) '$(srcdir)/src/main.cc'; fi`
+
+src/codescope-utils.o: src/utils.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(codescope_CXXFLAGS) $(CXXFLAGS) -MT src/codescope-utils.o -MD -MP -MF src/$(DEPDIR)/codescope-utils.Tpo -c -o src/codescope-utils.o `test -f 'src/utils.cc' || echo '$(srcdir)/'`src/utils.cc
+	$(am__mv) src/$(DEPDIR)/codescope-utils.Tpo src/$(DEPDIR)/codescope-utils.Po
+#	source='src/utils.cc' object='src/codescope-utils.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(codescope_CXXFLAGS) $(CXXFLAGS) -c -o src/codescope-utils.o `test -f 'src/utils.cc' || echo '$(srcdir)/'`src/utils.cc
+
+src/codescope-utils.obj: src/utils.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(codescope_CXXFLAGS) $(CXXFLAGS) -MT src/codescope-utils.obj -MD -MP -MF src/$(DEPDIR)/codescope-utils.Tpo -c -o src/codescope-utils.obj `if test -f 'src/utils.cc'; then $(CYGPATH_W) 'src/utils.cc'; else $(CYGPATH_W) '$(srcdir)/src/utils.cc'; fi`
+	$(am__mv) src/$(DEPDIR)/codescope-utils.Tpo src/$(DEPDIR)/codescope-utils.Po
+#	source='src/utils.cc' object='src/codescope-utils.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(codescope_CXXFLAGS) $(CXXFLAGS) -c -o src/codescope-utils.obj `if test -f 'src/utils.cc'; then $(CYGPATH_W) 'src/utils.cc'; else $(CYGPATH_W) '$(srcdir)/src/utils.cc'; fi`
+
+src/dbusc-dbus-client.o: src/dbus-client.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dbusc_CXXFLAGS) $(CXXFLAGS) -MT src/dbusc-dbus-client.o -MD -MP -MF src/$(DEPDIR)/dbusc-dbus-client.Tpo -c -o src/dbusc-dbus-client.o `test -f 'src/dbus-client.cc' || echo '$(srcdir)/'`src/dbus-client.cc
+	$(am__mv) src/$(DEPDIR)/dbusc-dbus-client.Tpo src/$(DEPDIR)/dbusc-dbus-client.Po
+#	source='src/dbus-client.cc' object='src/dbusc-dbus-client.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dbusc_CXXFLAGS) $(CXXFLAGS) -c -o src/dbusc-dbus-client.o `test -f 'src/dbus-client.cc' || echo '$(srcdir)/'`src/dbus-client.cc
+
+src/dbusc-dbus-client.obj: src/dbus-client.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dbusc_CXXFLAGS) $(CXXFLAGS) -MT src/dbusc-dbus-client.obj -MD -MP -MF src/$(DEPDIR)/dbusc-dbus-client.Tpo -c -o src/dbusc-dbus-client.obj `if test -f 'src/dbus-client.cc'; then $(CYGPATH_W) 'src/dbus-client.cc'; else $(CYGPATH_W) '$(srcdir)/src/dbus-client.cc'; fi`
+	$(am__mv) src/$(DEPDIR)/dbusc-dbus-client.Tpo src/$(DEPDIR)/dbusc-dbus-client.Po
+#	source='src/dbus-client.cc' object='src/dbusc-dbus-client.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dbusc_CXXFLAGS) $(CXXFLAGS) -c -o src/dbusc-dbus-client.obj `if test -f 'src/dbus-client.cc'; then $(CYGPATH_W) 'src/dbus-client.cc'; else $(CYGPATH_W) '$(srcdir)/src/dbus-client.cc'; fi`
+
+src/dbuss-dbus-server.o: src/dbus-server.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dbuss_CXXFLAGS) $(CXXFLAGS) -MT src/dbuss-dbus-server.o -MD -MP -MF src/$(DEPDIR)/dbuss-dbus-server.Tpo -c -o src/dbuss-dbus-server.o `test -f 'src/dbus-server.cc' || echo '$(srcdir)/'`src/dbus-server.cc
+	$(am__mv) src/$(DEPDIR)/dbuss-dbus-server.Tpo src/$(DEPDIR)/dbuss-dbus-server.Po
+#	source='src/dbus-server.cc' object='src/dbuss-dbus-server.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dbuss_CXXFLAGS) $(CXXFLAGS) -c -o src/dbuss-dbus-server.o `test -f 'src/dbus-server.cc' || echo '$(srcdir)/'`src/dbus-server.cc
+
+src/dbuss-dbus-server.obj: src/dbus-server.cc
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dbuss_CXXFLAGS) $(CXXFLAGS) -MT src/dbuss-dbus-server.obj -MD -MP -MF src/$(DEPDIR)/dbuss-dbus-server.Tpo -c -o src/dbuss-dbus-server.obj `if test -f 'src/dbus-server.cc'; then $(CYGPATH_W) 'src/dbus-server.cc'; else $(CYGPATH_W) '$(srcdir)/src/dbus-server.cc'; fi`
+	$(am__mv) src/$(DEPDIR)/dbuss-dbus-server.Tpo src/$(DEPDIR)/dbuss-dbus-server.Po
+#	source='src/dbus-server.cc' object='src/dbuss-dbus-server.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(dbuss_CXXFLAGS) $(CXXFLAGS) -c -o src/dbuss-dbus-server.obj `if test -f 'src/dbus-server.cc'; then $(CYGPATH_W) 'src/dbus-server.cc'; else $(CYGPATH_W) '$(srcdir)/src/dbus-server.cc'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
