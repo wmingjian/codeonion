@@ -42,7 +42,7 @@
 /* CURSOR */
 
 .CodeMirror div.CodeMirror-cursor {
-  border-left: 1px solid white;
+  border-left: 1px solid black;
 }
 /* Shown when moving in bi-directional text */
 .CodeMirror div.CodeMirror-secondarycursor {
@@ -142,8 +142,8 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
   line-height: 1;
   position: relative;
   overflow: hidden;
-  background: black;
-  color: white;
+  background: white;
+  color: black;
 }
 
 .CodeMirror-scroll {
