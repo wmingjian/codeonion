@@ -6,6 +6,7 @@
 //
 // You can find some technical background for some of the code below
 // at http://marijnhaverbeke.nl/blog/#cm-internals .
+window.onOnionUpdate = function() {console.log("Onion not implemented...");};
 
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
@@ -672,9 +673,9 @@
     if (!update.force &&
         update.visible.from >= display.viewFrom && update.visible.to <= display.viewTo &&
         (display.updateLineNumbers == null || display.updateLineNumbers >= display.viewTo) &&
-        display.renderedView == display.view && countDirtyView(cm) == 0)
+        display.renderedView == display.view && countDirtyView(cm) == 0) {
       return false;
-
+    }
     if (maybeUpdateLineNumberWidth(cm)) {
       resetView(cm);
       update.dims = getDimensions(cm);
@@ -701,9 +702,9 @@
 
     var toUpdate = countDirtyView(cm);
     if (!different && toUpdate == 0 && !update.force && display.renderedView == display.view &&
-        (display.updateLineNumbers == null || display.updateLineNumbers >= display.viewTo))
+        (display.updateLineNumbers == null || display.updateLineNumbers >= display.viewTo)) {
       return false;
-
+    }
     // For big changes, we hide the enclosing element during the
     // update, since that speeds up the operations on most browsers.
     var focused = activeElt();
@@ -2143,6 +2144,7 @@
 
   function endOperation_W1(op) {
     op.updatedDisplay = op.mustUpdate && updateDisplayIfNeeded(op.cm, op.update);
+    window.onOnionUpdate();
   }
 
   function endOperation_R2(op) {

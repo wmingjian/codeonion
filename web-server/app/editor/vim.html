@@ -35,6 +35,23 @@ int getchar(void)
 
 <script>
       var i = 0;
+      var old_lines = [];
+      var new_lines = [];
+      var diff_lines = [];
+
+      function getNewLines(lines) {
+        var codes_lines = lines.getElementsByClassName("CodeMirror-code");
+        var divs = document.getElementByTagName("div");
+        for(var i = 0; i < divs.length; i ++) {
+          new_lines[i] = divs[i].innerHTML;
+        }
+      }
+
+      function diffLines(lines1, lines2) {
+        
+      }
+
+
       CodeMirror.commands.save = function(){ alert("Saving"); };
       var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
@@ -47,7 +64,6 @@ int getchar(void)
       var editorDisplay = document.getElementById("code");
       var keys = '';
       CodeMirror.on(editor, 'vim-keypress', function(key) {
-        console.log(key);
         keys = keys + key;
         commandDisplay.innerHTML = keys;
       });
@@ -57,15 +73,22 @@ int getchar(void)
       });
 
       CodeMirror.on(editor, 'keydown', function(cm,key) {
-        console.log("key:", key.keyCode);  
+        //console.log("key:", key.keyCode);  
         var curPos = editor.getCursor();
-        console.log("cur:", curPos);
+        //console.log("cur:", curPos);
+        var lines = document.getElementsByClassName("CodeMirror-lines");
+        var cursors = document.getElementsByClassName("CodeMirror-cursor");
       });
   
       CodeMirror.on(editor, 'mousedown', function(e) {
         var curPos = editor.getCursor();
         console.log("cur mouse:", curPos);
       });
+
+      window.onOnionUpdate = function() {
+        var curPos = editor.getCursor();
+        console.log("cur:", curPos);
+      }
 
       window.setInterval(function() {
         i ++;
