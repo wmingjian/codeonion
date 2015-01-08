@@ -34,63 +34,58 @@ int getchar(void)
 <div style="font-size: 13px; width: 300px; height: 30px;">Key buffer: <span id="command-display"></span></div>
 
 <script>
-      var i = 0;
-      var old_lines = [];
-      var new_lines = [];
-      var diff_lines = [];
+    var i = 0;
+    var old_lines = [];
+    var new_lines = [];
+    var diff_lines = [];
 
-      function getNewLines(lines) {
+    function getNewLines(lines) {
         var codes_lines = lines.getElementsByClassName("CodeMirror-code");
         var divs = document.getElementByTagName("div");
         for(var i = 0; i < divs.length; i ++) {
-          new_lines[i] = divs[i].innerHTML;
+            new_lines[i] = divs[i].innerHTML;
         }
-      }
+    }
 
-      function diffLines(lines1, lines2) {
-        
-      }
+    function diffLines(lines1, lines2) {
+      
+    }
 
 
-      CodeMirror.commands.save = function(){ alert("Saving"); };
-      var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+    CodeMirror.commands.save = function(){ alert("Saving"); };
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
         mode: "text/x-csrc",
         keyMap: "vim",
         matchBrackets: true,
         showCursorWhenSelecting: true
-      });
-      var commandDisplay = document.getElementById('command-display');
-      var editorDisplay = document.getElementById("code");
-      var keys = '';
-      CodeMirror.on(editor, 'vim-keypress', function(key) {
+    });
+    var commandDisplay = document.getElementById('command-display');
+    var editorDisplay = document.getElementById("code");
+    var keys = '';
+    CodeMirror.on(editor, 'vim-keypress', function(key) {
         keys = keys + key;
         commandDisplay.innerHTML = keys;
-      });
-      CodeMirror.on(editor, 'vim-command-done', function(e) {
+    });
+    CodeMirror.on(editor, 'vim-command-done', function(e) {
         keys = '';
         commandDisplay.innerHTML = keys;
-      });
+    });
 
-      CodeMirror.on(editor, 'keydown', function(cm,key) {
-        //console.log("key:", key.keyCode);  
-        var curPos = editor.getCursor();
-        //console.log("cur:", curPos);
-        var lines = document.getElementsByClassName("CodeMirror-lines");
-        var cursors = document.getElementsByClassName("CodeMirror-cursor");
-      });
-  
-      CodeMirror.on(editor, 'mousedown', function(e) {
+    CodeMirror.on(editor, 'mousedown', function(e) {
         var curPos = editor.getCursor();
         console.log("cur mouse:", curPos);
-      });
+    });
 
-      window.onOnionUpdate = function() {
+    window.onOnionUpdate = function() {
         var curPos = editor.getCursor();
         console.log("cur:", curPos);
-      }
+        var lines = document.getElementsByClassName("CodeMirror-code");
+        var divs = lines[0].children;
+        console.log(divs[curPos.line].innerHTML);
+    }
 
-      window.setInterval(function() {
+    window.setInterval(function() {
         i ++;
         if(i >= 0) return;
         var lines = document.getElementsByClassName("CodeMirror-lines");
@@ -99,7 +94,7 @@ int getchar(void)
         console.log(cur_line);
         editor.setCursor(8, cur_line.length);
         lines[0].innerHTML = lines[0].innerHTML.replace("buf</span>;", "buf</span>;     <span class=\"cm-keyword\">int</span>;");
-      }, 50);
+    }, 50);
 </script>
 
 </article>
