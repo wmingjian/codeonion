@@ -11,7 +11,7 @@
 <script src="./mode/clike/clike.js"></script>
 <script src="./addon/edit/matchbrackets.js"></script>
 <script src="./keymap/vim.js"></script>
-
+<script src="./base64.js"></script>
 <article>
 <form><textarea id="code" name="code">
 #include "syscalls.h"
@@ -35,22 +35,90 @@ int getchar(void)
 
 <script>
     var i = 0;
-    var old_lines = [];
+    var lastLines = [];
     var new_lines = [];
     var diff_lines = [];
-
-    function getNewLines(lines) {
+    
+    var zipkeyscontent = ["<div class=\"CodeMirror-gutter-wrapper\" style=\"left: -29px; width: 29px;\">",
+                   "<div class=\"CodeMirror-linenumber CodeMirror-gutter-elt\" style=\"left: 0px; width: 20px;\">",
+                   "</div>",
+                   "<pre class=\"\">",
+                   "<span style=\"padding-right: 0.1px;\">",
+                   "<span class=\"cm-variable\">",
+                   "<span class=\"cm-keyword\">",
+                   "<span class=\"cm-operator\">",
+                   "<span>",
+                   "</span>",
+                   "<pre>",
+                   "</pre>"];
+                   
+    var zipkeysziped = ["<gt>",
+                   "<ln>",
+                   "</d>",
+                   "<pc>",
+                   "<ss>",
+                   "<scv>",
+                   "<sck>",
+                   "<sco>",
+                   "<s>",
+                   "</s>",
+                   "<p>",
+                   "</p>"];
+                   
+    var zipkeyshashcode = [];
+    
+    function initHashCode() {
+        for(var i = 0; i < zipkeyscontent.length; i ++) {
+            zipkeyshashcode[i] = hashCode(zipkeyscontent[i]);
+        }
+    }
+    
+    function hashCode(str) {
+        var hash = 0;
+        if(str.length > 0) {
+            for(var i = 0; i < str.length; i ++) {
+                var ch = str.charCodeAt(i);
+                hash = Math.round(hash * 31 + ch);
+            }
+        }
+        return hash;
+    }
+    
+    function initLines(lines, dest) {
         var codes_lines = lines.getElementsByClassName("CodeMirror-code");
         var divs = document.getElementByTagName("div");
         for(var i = 0; i < divs.length; i ++) {
-            new_lines[i] = divs[i].innerHTML;
+            dest[i] = divs[i].innerHTML;
         }
     }
 
-    function diffLines(lines1, lines2) {
-      
+    function initLastLines(lines) {
+        initLines(lines, lastLines);
+    }
+    
+    function updateLastLines(lineNum, lineContent) {
+        lastLines[lineNum] = lineContent;
     }
 
+    function diffLines(line1, line2) {
+        
+    }
+    
+    function zipLine(line) {
+        var retLine = line;
+        console.log("before zip length: ", line.length);
+        for(var i = 0; i < zipkeyscontent.length; i ++) {
+            retLine = retLine.replace(new RegExp(zipkeyscontent[i], 'g'), zipkeysziped[i]);
+        }
+        var retLinePlaint = retLine;
+        //retLine = base64encode(retLine);
+        //var baseone = base64encode(line);
+        console.log("After zip length: ", retLine.length);
+        //console.log(Math.round(retLine.length/line.length * 100) + "%");
+        console.log(Math.round(retLinePlaint.length/line.length * 100) + "%");
+        //console.log(Math.round(baseone.length/line.length * 100) + "%");
+        return retLinePlaint;
+    }
 
     CodeMirror.commands.save = function(){ alert("Saving"); };
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
@@ -82,19 +150,11 @@ int getchar(void)
         console.log("cur:", curPos);
         var lines = document.getElementsByClassName("CodeMirror-code");
         var divs = lines[0].children;
+        var line = divs[curPos.line].innerHTML;
         console.log(divs[curPos.line].innerHTML);
+        line = zipLine(line);
+        console.log(line);
     }
-
-    window.setInterval(function() {
-        i ++;
-        if(i >= 0) return;
-        var lines = document.getElementsByClassName("CodeMirror-lines");
-        var cur_line = editor.getLine(8);
-        cur_line = cur_line + "     int;" + "     int;";
-        console.log(cur_line);
-        editor.setCursor(8, cur_line.length);
-        lines[0].innerHTML = lines[0].innerHTML.replace("buf</span>;", "buf</span>;     <span class=\"cm-keyword\">int</span>;");
-    }, 50);
 </script>
 
 </article>
