@@ -35,9 +35,11 @@ int getchar(void)
 
 <script>
     var i = 0;
-    var lastLines = [];
-    var new_lines = [];
-    var diff_lines = [];
+    var gLastLines = [];
+ 
+    var gCursorLineNumberBefore = -1;
+    
+    var gWholeLinesNumber = 0;
     
     var zipkeyscontent = ["<div class=\"CodeMirror-gutter-wrapper\" style=\"left: -29px; width: 29px;\">",
                    "<div class=\"CodeMirror-linenumber CodeMirror-gutter-elt\" style=\"left: 0px; width: 20px;\">",
@@ -93,29 +95,35 @@ int getchar(void)
     }
 
     function initLastLines(lines) {
-        initLines(lines, lastLines);
+        initLines(lines, gLastLines);
     }
     
     function updateLastLines(lineNum, lineContent) {
-        lastLines[lineNum] = lineContent;
+        gLastLines[lineNum] = lineContent;
     }
 
     function diffLines(line1, line2) {
         
     }
     
+    function getWholeLineNumber() {
+        var lines = document.getElementsByClassName("CodeMirror-code");
+        var divs = lines[0].children;
+        return divs.length;
+    }
+    
     function zipLine(line) {
         var retLine = line;
-        console.log("before zip length: ", line.length);
+        //console.log("before zip length: ", line.length);
         for(var i = 0; i < zipkeyscontent.length; i ++) {
             retLine = retLine.replace(new RegExp(zipkeyscontent[i], 'g'), zipkeysziped[i]);
         }
         var retLinePlaint = retLine;
         //retLine = base64encode(retLine);
         //var baseone = base64encode(line);
-        console.log("After zip length: ", retLine.length);
+        //console.log("After zip length: ", retLine.length);
         //console.log(Math.round(retLine.length/line.length * 100) + "%");
-        console.log(Math.round(retLinePlaint.length/line.length * 100) + "%");
+        //console.log(Math.round(retLinePlaint.length/line.length * 100) + "%");
         //console.log(Math.round(baseone.length/line.length * 100) + "%");
         return retLinePlaint;
     }
@@ -143,17 +151,44 @@ int getchar(void)
     CodeMirror.on(editor, 'mousedown', function(e) {
         var curPos = editor.getCursor();
         console.log("cur mouse:", curPos);
+        gCursorLineNumberBefore = editor.getCursor().line;
+        gWholeLinesNumber = getWholeLineNumber();
     });
-
-    window.onOnionUpdate = function() {
+    
+    CodeMirror.on(editor, 'keydown', function(key) {
+        gCursorLineNumberBefore = editor.getCursor().line;
+        gWholeLinesNumber = getWholeLineNumber();
+    });
+    
+    function processChanges() {
         var curPos = editor.getCursor();
-        console.log("cur:", curPos);
         var lines = document.getElementsByClassName("CodeMirror-code");
         var divs = lines[0].children;
-        var line = divs[curPos.line].innerHTML;
-        console.log(divs[curPos.line].innerHTML);
-        line = zipLine(line);
-        console.log(line);
+        
+        var appendDeleteChange = 0;
+        
+        console.log("==============================================", gCursorLineNumberBefore, curPos.line);
+        
+        appendDeleteChange = gWholeLinesNumber < divs.length ? 1 : (gWholeLinesNumber > divs.length ? -1 : 0);
+        
+        if(curPos.line - gCursorLineNumberBefore >= 0) {
+            for (var n = gCursorLineNumberBefore; n <= curPos.line; n ++) {
+                var line = divs[n].innerHTML;
+                line = zipLine(line);
+                console.log("[STEVEN]", line);
+            }
+        }
+        else {
+            for (var n = curPos.line; n <= gCursorLineNumberBefore; n ++) {
+                var line = divs[n].innerHTML;
+                line = zipLine(line);
+                console.log("[STEVEN]", line);
+            }
+        }
+    }
+
+    window.onOnionUpdate = function() {
+       processChanges();
     }
 </script>
 
