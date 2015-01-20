@@ -12,6 +12,8 @@
 <script src="./addon/edit/matchbrackets.js"></script>
 <script src="./keymap/vim.js"></script>
 <script src="./base64.js"></script>
+<script src="./js/lcs.js"></script>
+<script src="./js/zip.js"></script>
 <article>
 <form><textarea id="code" name="code">
 #include "syscalls.h"
@@ -32,78 +34,53 @@ int getchar(void)
 }
 </textarea></form>
 <div style="font-size: 13px; width: 300px; height: 30px;">Key buffer: <span id="command-display"></span></div>
+====================================================================<br>
+DIFF LINES SHOWED HERE:
+<div id="show-same-lines" class="CodeMirror cm-s-default cm-fat-cursor">
+</div>
 
 <script>
     var i = 0;
     var gLastLines = [];
- 
+    var inited = false;
     var gCursorLineNumberBefore = -1;
-    
     var gWholeLinesNumber = 0;
-    
-    var zipkeyscontent = ["<div class=\"CodeMirror-gutter-wrapper\" style=\"left: -29px; width: 29px;\">",
-                   "<div class=\"CodeMirror-linenumber CodeMirror-gutter-elt\" style=\"left: 0px; width: 20px;\">",
-                   "</div>",
-                   "<pre class=\"\">",
-                   "<span style=\"padding-right: 0.1px;\">",
-                   "<span class=\"cm-variable\">",
-                   "<span class=\"cm-keyword\">",
-                   "<span class=\"cm-operator\">",
-                   "<span>",
-                   "</span>",
-                   "<pre>",
-                   "</pre>"];
-                   
-    var zipkeysziped = ["<gt>",
-                   "<ln>",
-                   "</d>",
-                   "<pc>",
-                   "<ss>",
-                   "<scv>",
-                   "<sck>",
-                   "<sco>",
-                   "<s>",
-                   "</s>",
-                   "<p>",
-                   "</p>"];
-                   
-    var zipkeyshashcode = [];
-    
-    function initHashCode() {
-        for(var i = 0; i < zipkeyscontent.length; i ++) {
-            zipkeyshashcode[i] = hashCode(zipkeyscontent[i]);
-        }
-    }
-    
-    function hashCode(str) {
-        var hash = 0;
-        if(str.length > 0) {
-            for(var i = 0; i < str.length; i ++) {
-                var ch = str.charCodeAt(i);
-                hash = Math.round(hash * 31 + ch);
-            }
-        }
-        return hash;
-    }
-    
-    function initLines(lines, dest) {
-        var codes_lines = lines.getElementsByClassName("CodeMirror-code");
-        var divs = document.getElementByTagName("div");
-        for(var i = 0; i < divs.length; i ++) {
-            dest[i] = divs[i].innerHTML;
-        }
-    }
+    var showSameLineDiv = document.getElementById("show-same-lines");
 
-    function initLastLines(lines) {
-        initLines(lines, gLastLines);
+    function initLines() {
+        var codes_lines = document.getElementsByClassName("CodeMirror-code");
+        var divs = codes_lines[0].children;
+        var dest = [];
+        for(var i = 0; i < divs.length; i ++) {
+            dest[i] = zipLine(divs[i].getElementsByTagName("pre")[0].outerHTML);
+        }
+        return dest;
+    }
+    
+    function initLinesWithoutZip() {
+        var codes_lines = document.getElementsByClassName("CodeMirror-code");
+        var divs = codes_lines[0].children;
+        var dest = [];
+        for(var i = 0; i < divs.length; i ++) {
+            dest[i] = divs[i].getElementsByTagName("pre")[0].outerHTML;
+        }
+        return dest;
     }
     
     function updateLastLines(lineNum, lineContent) {
         gLastLines[lineNum] = lineContent;
     }
 
+    function diffWholeText(arr1, arr2) {
+        return lcsArray(arr1, arr2);
+    }
+    
+    function diffWhileTextDebug(arr1, arr2) {
+        return debugLcsArray(arr1, arr2);
+    }
+
     function diffLines(line1, line2) {
-        
+        return lcsString(line1, line2);
     }
     
     function getWholeLineNumber() {
@@ -111,24 +88,11 @@ int getchar(void)
         var divs = lines[0].children;
         return divs.length;
     }
+   
+    CodeMirror.commands.save = function() {
+        gLastLines = initLines(); 
+    };
     
-    function zipLine(line) {
-        var retLine = line;
-        //console.log("before zip length: ", line.length);
-        for(var i = 0; i < zipkeyscontent.length; i ++) {
-            retLine = retLine.replace(new RegExp(zipkeyscontent[i], 'g'), zipkeysziped[i]);
-        }
-        var retLinePlaint = retLine;
-        //retLine = base64encode(retLine);
-        //var baseone = base64encode(line);
-        //console.log("After zip length: ", retLine.length);
-        //console.log(Math.round(retLine.length/line.length * 100) + "%");
-        //console.log(Math.round(retLinePlaint.length/line.length * 100) + "%");
-        //console.log(Math.round(baseone.length/line.length * 100) + "%");
-        return retLinePlaint;
-    }
-
-    CodeMirror.commands.save = function(){ alert("Saving"); };
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
         mode: "text/x-csrc",
@@ -136,9 +100,12 @@ int getchar(void)
         matchBrackets: true,
         showCursorWhenSelecting: true
     });
+    
+    
     var commandDisplay = document.getElementById('command-display');
     var editorDisplay = document.getElementById("code");
     var keys = '';
+    
     CodeMirror.on(editor, 'vim-keypress', function(key) {
         keys = keys + key;
         commandDisplay.innerHTML = keys;
@@ -146,6 +113,7 @@ int getchar(void)
     CodeMirror.on(editor, 'vim-command-done', function(e) {
         keys = '';
         commandDisplay.innerHTML = keys;
+        console.log("vim-command-done");
     });
 
     CodeMirror.on(editor, 'mousedown', function(e) {
@@ -160,35 +128,15 @@ int getchar(void)
         gWholeLinesNumber = getWholeLineNumber();
     });
     
-    function processChanges() {
-        var curPos = editor.getCursor();
-        var lines = document.getElementsByClassName("CodeMirror-code");
-        var divs = lines[0].children;
-        
-        var appendDeleteChange = 0;
-        
-        console.log("==============================================", gCursorLineNumberBefore, curPos.line);
-        
-        appendDeleteChange = gWholeLinesNumber < divs.length ? 1 : (gWholeLinesNumber > divs.length ? -1 : 0);
-        
-        if(curPos.line - gCursorLineNumberBefore >= 0) {
-            for (var n = gCursorLineNumberBefore; n <= curPos.line; n ++) {
-                var line = divs[n].innerHTML;
-                line = zipLine(line);
-                console.log("[STEVEN]", line);
-            }
+    window.onOnionUpdate = function() {
+        if(gLastLines.length > 0) {
+            var newLines = initLines();
+            var sameLines = diffWhileTextDebug(gLastLines, newLines);
+            showSameLineDiv.innerHTML = unzipLine(sameLines);
         }
         else {
-            for (var n = curPos.line; n <= gCursorLineNumberBefore; n ++) {
-                var line = divs[n].innerHTML;
-                line = zipLine(line);
-                console.log("[STEVEN]", line);
-            }
+            gLastLines = initLines();
         }
-    }
-
-    window.onOnionUpdate = function() {
-       processChanges();
     }
 </script>
 
