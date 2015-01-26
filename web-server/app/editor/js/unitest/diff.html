@@ -1,0 +1,91 @@
+<script src="../diff.js"></script>
+<div id="code">
+
+</div>
+<script>
+
+var array1 = [];
+array1[0] = "aaaaaaaaaaaaaaaaaaaaa";
+array1[1] = "bbbbbbbbbbbbbbbbbbbbb";
+array1[2] = "ccccccccccccccccccccc";
+array1[3] = "ddddddddddddddddddddd";
+array1[4] = "eeeeeeeeeeeeeeeeeeeee";
+array1[5] = "fffffffffffffffffffff";
+array1[6] = "ggggggggggggggggggggg";
+array1[7] = "hhhhhhhhhhhhhhhhhhhhh";
+array1[8] = "iiiiiiiiiiiiiiiiiiiii";
+array1[9] = "jjjjjjjjjjjjjjjjjjjjj";
+array1[10] = "kkkkkkkkkkkkkkkkkkkkk";
+array1[11] = "lllllllllllllllllllll";
+array1[12] = "mmmmmmmmmmmmmmmmmmmmm2";
+array1[13] = "nnnnnnnnnnnnnnnnnnnnn";
+array1[14] = "ooooooooooooooooooooo111";
+array1[15] = "ooooooooooooooooooooo111";
+array1[16] = "ooooooooooooooooooooo222";
+
+var array2 = [];
+array2[0] = "aaaaaaaaaaaaaaaaaaaaa1";
+array2[1] = "bbbbbbbbbbbbbbbbbbbbb";
+array2[2] = "ccccccccccccccccccccc";
+array2[3] = "ddddddddddddddddddddd";
+array2[4] = "eeeeeeeeeeeeeeeeeeeee2";
+array2[5] = "fffffffffffffffffffff";
+array2[6] = "ggggggggggggggggggggg";
+array2[7] = "hhhhhhhhhhhhhhhhhhhhh";
+array2[8] = "iiiiiiiiiiiiiiiiiiiii3";
+array2[9] = "jjjjjjjjjjjjjjjjjjjjj";
+array2[10] = "kkkkkkkkkkkkkkkkkkkkk";
+array2[11] = "lllllllllllllllllllll";
+array2[12] = "mmmmmmmmmmmmmmmmmmmmm2";
+array2[13] = "nnnnnnnnnnnnnnnnnnnnn";
+array2[14] = "ooooooooooooooooooooo";
+array2[15] = "ooooooooooooooooooooo111";
+array2[16] = "ooooooooooooooooooooo222";
+array2[17] = "ooooooooooooooooooooo334";
+var text = "";
+
+function diffArrayGo() {
+    var diff = diffArray(array1, array2).result;
+
+    for(var i = 0; i < diff.length; i ++) {
+        var obj = diff[i];
+        console.log("state:", i, obj.state);
+        if(obj.state == -1) {
+            text += "<div style='background-color:#FF0000'>" + obj.data + "</div><br>";
+        }
+        else if(obj.state == 1) {
+            text += "<div style='background-color:#00FF00'>" + obj.data + "</div><br>";
+        }
+        else if(obj.state == 0) {
+            text += "<div style='background-color:transparent'>" + obj.line + ":" + obj.data + "</div><br>";
+        }
+    }
+}
+
+str1 = "BACFEHUICWMNP"
+str2 = "ABFEUCMNP"
+
+function diffStringGo() {
+    var diff = diffArray(str1, str2).result;
+    
+
+    for(var i = 0; i < diff.length; i ++) {
+        var obj = diff[i];
+        console.log("state:", i, obj.state);
+        if(obj.state == -1) {
+            text += "<a style='background-color:#FF0000'>" + obj.data + "</a>";
+        }
+        else if(obj.state == 1) {
+            text += "<a style='background-color:#00FF00'>" + obj.data + "</a>";
+        }
+        else if(obj.state == 0) {
+            text += "<a style='background-color:transparent'>" + obj.data + "</a>";
+        }
+    }
+}
+
+//diffArrayGo();
+diffStringGo();
+var div = document.getElementById('code');
+div.innerHTML = text;
+</script>
