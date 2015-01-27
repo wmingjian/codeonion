@@ -37,6 +37,7 @@ function diffArray(array1, array2) {
     var j = array1.length - 1;
     var i = array2.length - 1;
     var k = 0;
+    var has_diff = false;
     while(true) {
         if(i < 0 || j < 0) {
             while(j >= 0) {
@@ -52,7 +53,7 @@ function diffArray(array1, array2) {
             break;
         }
         if(dir[i][j] == DIRECTION_LEFT_UP) {
-            diffArr[k] = {state:0, data:array1[j], line:i};
+            diffArr[k] = {state:0, data:"", line:i};
             k ++;
             i --;
             j --;
@@ -61,11 +62,13 @@ function diffArray(array1, array2) {
             diffArr[k] = {state:1, data:array2[i], line:-1};
             k ++;
             i --;
+            has_diff = true;
         }
         else if(dir[i][j] == DIRECTION_LEFT) {
             diffArr[k] = {state:-1, data:array1[j], line:-1};
             k ++;
             j --;
+            has_diff = true;
         }
     }
     
@@ -75,7 +78,7 @@ function diffArray(array1, array2) {
         temp[i] = diffArr[diffArr.length - i - 1];
     }
     diffArr = temp;
-    return {result : diffArr};
+    return {result : diffArr, hasDiff : has_diff};
 }
 
 

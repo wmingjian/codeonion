@@ -12,6 +12,8 @@
 <script src="./addon/edit/matchbrackets.js"></script>
 <script src="./keymap/vim.js"></script>
 <script src="./js/lcs.js"></script>
+<script src="./js/diff.js"></script>
+<script src="./js/diffcache.js"></script>
 <script src="./js/zip.js"></script>
 <article>
 <form><textarea id="code" name="code">
@@ -40,10 +42,12 @@ DIFF LINES SHOWED HERE:
 
 <script>
     var i = 0;
+    var gTimeTick = 0;
     var gLastLines = [];
     var inited = false;
     var gCursorLineNumberBefore = -1;
     var gWholeLinesNumber = 0;
+    var gSendTickBlank = 20;
     var showSameLineDiv = document.getElementById("show-same-lines");
 
     function initLines() {
@@ -128,15 +132,66 @@ DIFF LINES SHOWED HERE:
     });
     
     window.onOnionUpdate = function() {
-        if(gLastLines.length > 0) {
-            var newLines = initLines();
-            var sameLines = diffWhileTextDebug(gLastLines, newLines);
-            showSameLineDiv.innerHTML = unzipLine(sameLines);
+        score();
+    }
+    
+    
+    function score() {
+        var newLines = initLines();
+        var diffs = diffArray(gLastLines, newLines);
+        var diffData = [];
+        if(diffs.hasDiff) {
+            if(!hasDiffData()) {
+                gTimeTick = 0;
+            }
+            diffData = diffs.result;
+            pushDiff(diffData, gTimeTick);
         }
-        else {
-            gLastLines = initLines();
+        gLastLines = newLines;
+    }
+    
+    function sync() {
+        if(hasDiffData()) {
+            var diffStringData = getDiffStringData();
+            console.log(diffStringData);
+            socket.send(diffStringData);
+            clearDiff();
+            gTimeTick = 0;
         }
     }
+    
+    function tick() {
+        gTimeTick ++;
+    }
+    
+    
+    window.setInterval(sync, 1000);
+    window.setInterval(tick, 10);
+    
+    var socket = new WebSocket('ws://127.0.0.1:8111'); 
+
+    socket.onopen = function(event) {
+        socket.onmessage = function(event) { 
+            console.log("onmessage", event.data);
+            if(event.data == "S") {
+                if(gLastLines.length == 0) {
+                    gLastLines = initLines();
+                }
+                var content = "";
+                for(var i = 0; i < gLastLines.length; i ++) {
+                    content += gLastLines[i];
+                }
+                socket.send(content);
+            }
+        }; 
+        socket.onclose = function(event) { 
+            console.log('Client notified socket has closed',event); 
+        }; 
+    };
+    
+    
+    
+    
 </script>
 
 </article>

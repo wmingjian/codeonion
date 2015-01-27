@@ -1,0 +1,95 @@
+<!doctype html>
+
+<title>CodeOnion</title>
+<meta charset="utf-8"/>
+
+<link rel="stylesheet" href="./lib/codemirror.css">
+<link rel="stylesheet" href="./addon/dialog/dialog.css">
+<script src="./lib/codemirror.js"></script>
+<script src="./addon/dialog/dialog.js"></script>
+<script src="./addon/search/searchcursor.js"></script>
+<script src="./mode/clike/clike.js"></script>
+<script src="./addon/edit/matchbrackets.js"></script>
+<script src="./keymap/vim.js"></script>
+<script src="./js/util.js"></script>
+<script src="./js/lcs.js"></script>
+<script src="./js/diff.js"></script>
+<script src="./js/diffcache.js"></script>
+<script src="./js/patch.js"></script>
+<script src="./js/zip.js"></script>
+<article>
+<div id="show-same-lines" class="CodeMirror cm-s-default cm-fat-cursor">
+</div>
+
+<script>
+    var i = 0;
+    var popos = 0;
+    var gTimeTick = 0;
+    var gLastLines = [];
+    var currentLines = [];
+    var inited = false;
+    var gCursorLineNumberBefore = -1;
+    var gWholeLinesNumber = 0;
+    var gSendTickBlank = 20;
+    var showSameLineDiv = document.getElementById("show-same-lines");
+   
+    var socket = new WebSocket('ws://127.0.0.1:8111'); 
+    
+    function initLines() {
+        var divs = showSameLineDiv.children;
+        var dest = [];
+        for(var i = 0; i < divs.length; i ++) {
+            dest[i] = zipLine(divs[i].outerHTML);
+        }
+        return dest;
+    }
+    
+    socket.onopen = function(event) {
+        socket.onmessage = function(event) {
+            console.log("onmessage", event.data);
+            if(!inited) {
+                gLastLines = event.data;
+                inited = true;
+                showSameLineDiv.innerHTML = unzipLine(gLastLines);
+                return;
+            }
+            var diffData = stringToDiffData(event.data);
+            for(var i = 0; i < diffData.length; i ++) {
+                pushDiff(diffData[i], diffData[i][0].tick);
+            }
+          
+        }; 
+        socket.onclose = function(event) { 
+            console.log('Client notified socket has closed',event); 
+        }; 
+    };
+    
+    function tick() {
+        var diffData = getDiffData();
+        if(diffData.length > 0 && popos < diffData.length) {
+        
+            if(gTimeTick >= diffData[popos][0].tick) {
+                var diff = diffData[popos];
+                currentLines = initLines();
+                var newLines = patchArray(currentLines, diff);
+                newLines = unzipLines(newLines);
+                showSameLineDiv.innerHTML = util_array_to_html(newLines);
+                popos ++;
+            }
+            else {
+                 gTimeTick ++;
+            }
+            
+        }
+        else {
+           gTimeTick = 0;
+           popos = 0;
+           clearDiff();
+        }
+        
+    }  
+    window.setInterval(tick, 10);    
+    
+</script>
+
+</article>
