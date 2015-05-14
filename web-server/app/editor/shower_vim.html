@@ -1,8 +1,9 @@
-<!doctype html>
-
-<title>CodeOnion</title>
-<meta charset="utf-8"/>
-
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>CodeOnion - student</title>
+<link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="./lib/codemirror.css">
 <link rel="stylesheet" href="./addon/dialog/dialog.css">
 <script src="./lib/codemirror.js"></script>
@@ -17,10 +18,10 @@
 <script src="./js/diffcache.js"></script>
 <script src="./js/patch.js"></script>
 <script src="./js/zip.js"></script>
+</head>
+<body>
 <article>
-<div id="show-same-lines" class="CodeMirror cm-s-default cm-fat-cursor">
-</div>
-
+<div id="show-same-lines" class="CodeMirror cm-s-default cm-fat-cursor"></div>
 <script>
     var i = 0;
     var popos = 0;
@@ -31,10 +32,10 @@
     var gCursorLineNumberBefore = -1;
     var gWholeLinesNumber = 0;
     var gSendTickBlank = 20;
-    var showSameLineDiv = document.getElementById("show-same-lines");
-   
-    var socket = new WebSocket('ws://127.0.0.1:8111'); 
-    
+    var showSameLineDiv = $q("#show-same-lines");
+
+    var socket = new WebSocket('ws://127.0.0.1:8111');
+
     function initLines() {
         var divs = showSameLineDiv.children;
         var dest = [];
@@ -43,7 +44,7 @@
         }
         return dest;
     }
-    
+
     socket.onopen = function(event) {
         socket.onmessage = function(event) {
             console.log("onmessage", event.data);
@@ -57,17 +58,15 @@
             for(var i = 0; i < diffData.length; i ++) {
                 pushDiff(diffData[i], diffData[i][0].tick);
             }
-          
-        }; 
-        socket.onclose = function(event) { 
-            console.log('Client notified socket has closed',event); 
-        }; 
+        };
+        socket.onclose = function(event) {
+            console.log('Client notified socket has closed',event);
+        };
     };
-    
+
     function tick() {
         var diffData = getDiffData();
         if(diffData.length > 0 && popos < diffData.length) {
-        
             if(gTimeTick >= diffData[popos][0].tick) {
                 var diff = diffData[popos];
                 currentLines = initLines();
@@ -87,9 +86,9 @@
            clearDiff();
         }
         
-    }  
-    window.setInterval(tick, 10);    
-    
+    }
+    window.setInterval(tick, 10);
 </script>
-
 </article>
+</body>
+</html>
